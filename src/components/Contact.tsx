@@ -43,16 +43,45 @@ const contactInfo = [
 
 export default function ContactSection() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handleSubmit() {
-    setSent(true);
-    setTimeout(() => setSent(false), 4000);
-    setForm({ name: "", email: "", message: "" });
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
+      setErrorMsg("Please fill in all fields.");
+      setStatus("error");
+      return;
+    }
+
+    setStatus("loading");
+    setErrorMsg("");
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to send message.");
+      }
+
+      setStatus("success");
+      setForm({ name: "", email: "", message: "" });
+      setTimeout(() => setStatus("idle"), 4000);
+    } catch (err) {
+      setStatus("error");
+      setErrorMsg(err instanceof Error ? err.message : "Something went wrong.");
+    }
   }
 
   return (
@@ -96,42 +125,59 @@ export default function ContactSection() {
         </div>
 
         {/* Form */}
-        <Card className="p-5 sm:p-6 space-y-4">
-          <div className="space-y-2">
-            <label className="text-xs text-[#aaa] uppercase tracking-wider">Name</label>
-            <input
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="Your name"
-              className="w-full bg-[#f8f7f4] border border-[#e8e6e0] rounded-lg px-4 py-3 text-sm text-[#111] placeholder:text-[#ccc] focus:outline-none focus:ring-2 focus:ring-[#111]/10 transition"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs text-[#aaa] uppercase tracking-wider">Email</label>
-            <input
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="your@email.com"
-              className="w-full bg-[#f8f7f4] border border-[#e8e6e0] rounded-lg px-4 py-3 text-sm text-[#111] placeholder:text-[#ccc] focus:outline-none focus:ring-2 focus:ring-[#111]/10 transition"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs text-[#aaa] uppercase tracking-wider">Message</label>
-            <textarea
-              name="message"
-              value={form.message}
-              onChange={handleChange}
-              placeholder="Tell me about your project..."
-              rows={5}
-              className="w-full bg-[#f8f7f4] border border-[#e8e6e0] rounded-lg px-4 py-3 text-sm text-[#111] placeholder:text-[#ccc] focus:outline-none focus:ring-2 focus:ring-[#111]/10 transition resize-none"
-            />
-          </div>
-          <Button size="lg" className="w-full rounded-md" onClick={handleSubmit}>
-            {sent ? "Message Sent ✓" : "Send Message"}
-          </Button>
+        <Card className="p-5 sm:p-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-xs text-[#aaa] uppercase tracking-wider">Name</label>
+              <input
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder="Your name"
+                disabled={status === "loading"}
+                className="w-full bg-[#f8f7f4] border border-[#e8e6e0] rounded-lg px-4 py-3 text-sm text-[#111] placeholder:text-[#ccc] focus:outline-none focus:ring-2 focus:ring-[#111]/10 transition disabled:opacity-60"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs text-[#aaa] uppercase tracking-wider">Email</label>
+              <input
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="your@email.com"
+                disabled={status === "loading"}
+                className="w-full bg-[#f8f7f4] border border-[#e8e6e0] rounded-lg px-4 py-3 text-sm text-[#111] placeholder:text-[#ccc] focus:outline-none focus:ring-2 focus:ring-[#111]/10 transition disabled:opacity-60"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs text-[#aaa] uppercase tracking-wider">Message</label>
+              <textarea
+                name="message"
+                value={form.message}
+                onChange={handleChange}
+                placeholder="Tell me about your project..."
+                rows={5}
+                disabled={status === "loading"}
+                className="w-full bg-[#f8f7f4] border border-[#e8e6e0] rounded-lg px-4 py-3 text-sm text-[#111] placeholder:text-[#ccc] focus:outline-none focus:ring-2 focus:ring-[#111]/10 transition resize-none disabled:opacity-60"
+              />
+            </div>
+            {status === "error" && errorMsg && (
+              <p className="text-sm text-red-600">{errorMsg}</p>
+            )}
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full rounded-md"
+              disabled={status === "loading"}
+            >
+              {status === "loading"
+                ? "Sending..."
+                : status === "success"
+                  ? "Message Sent ✓"
+                  : "Send Message"}
+            </Button>
+          </form>
         </Card>
       </div>
     </section>

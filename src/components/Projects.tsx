@@ -1,9 +1,20 @@
-
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { ArrowUpRight } from "lucide-react";
 
-const projects = [
+type Project = {
+  title: string;
+  description: string;
+  tags: string[];
+  image: string;
+  color: string;
+  accent: string;
+  badge?: string;
+  link?: string;
+};
+
+const projects: Project[] = [
   {
     title: "Web Developer Study Dashboard",
     description:
@@ -12,6 +23,7 @@ const projects = [
     image: "/study_dashboard.png",
     color: "from-blue-600/10 to-indigo-600/5",
     accent: "#3b82f6",
+    link: "https://github.com/KunNuvath",
   },
   {
     title: "Arduino Uno",
@@ -21,6 +33,7 @@ const projects = [
     image: "/arduino_project.png",
     color: "from-[#00979C]/10 to-[#00979C]/5",
     accent: "#00979C",
+    link: "https://github.com/KunNuvath",
   },
   {
     title: "Sumo Robot",
@@ -31,6 +44,7 @@ const projects = [
     color: "from-[#e85d04]/10 to-[#e85d04]/5",
     accent: "#e85d04",
     badge: "🏆 3rd Place",
+    link: "https://github.com/KunNuvath",
   },
   {
     title: "Figma UI/UX Design",
@@ -40,6 +54,7 @@ const projects = [
     image: "/figma_project.png",
     color: "from-[#a259ff]/10 to-[#a259ff]/5",
     accent: "#a259ff",
+    link: "https://www.figma.com",
   },
   {
     title: "Raspberry Pi",
@@ -49,6 +64,7 @@ const projects = [
     image: "/raspberry_pi.png",
     color: "from-[#c51a4a]/10 to-[#c51a4a]/5",
     accent: "#c51a4a",
+    link: "https://github.com/KunNuvath",
   },
 ];
 
@@ -76,9 +92,9 @@ export default function ProjectsSection() {
         {projects.map((project, i) => (
           <Card
             key={i}
-            className="group overflow-hidden hover:shadow-[0_8px_40px_rgba(0,0,0,0.10)] transition-all duration-300 hover:-translate-y-1"
+            className="group overflow-hidden hover:shadow-[0_8px_40px_rgba(0,0,0,0.10)] transition-all duration-300 hover:-translate-y-1 flex flex-col"
           >
-            {/* Top image section */}
+            {/* Image */}
             <div className="relative h-48 sm:h-52 w-full bg-[#fcfbfa] overflow-hidden border-b border-[#e8e6e0]">
               {project.image ? (
                 <Image
@@ -100,7 +116,7 @@ export default function ProjectsSection() {
             </div>
 
             {/* Content */}
-            <div className="p-5 space-y-3">
+            <div className="p-5 flex flex-col gap-3">
               <h3 className="font-[family-name:var(--font-syne)] font-bold text-lg text-[#111] tracking-tight">
                 {project.title}
               </h3>
@@ -109,13 +125,25 @@ export default function ProjectsSection() {
               </p>
 
               {/* Tags */}
-              <div className="flex flex-wrap gap-2 pt-1">
+              <div className="flex flex-wrap gap-2">
                 {project.tags.map((tag) => (
                   <Badge key={tag} variant="outline" className="text-[10px]">
                     {tag}
                   </Badge>
                 ))}
               </div>
+
+              {project.link && (
+                <a
+                  href={project.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex self-start items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#111] text-white text-sm font-semibold transition-opacity hover:opacity-85"
+                >
+                  View Work
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </a>
+              )}
             </div>
           </Card>
         ))}
